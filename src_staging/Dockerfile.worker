@@ -1,0 +1,14 @@
+FROM python:3.11-slim
+
+WORKDIR /workspace
+
+# Install database and cache packages from requirements.txt
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy production source code
+COPY . /workspace/src
+
+ENV PYTHONPATH=/workspace
+
+CMD ["python", "-m", "src.app.worker"]

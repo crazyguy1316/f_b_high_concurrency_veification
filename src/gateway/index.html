@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>極速搶票交易驗證系統 | High-Concurrency Ticketing</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d0f14;
+            --card-bg: rgba(20, 24, 33, 0.6);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-color: #f3f4f6;
+            --text-muted: #9ca3af;
+            --primary: #8b5cf6;
+            --primary-hover: #a78bfa;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 40%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 2rem;
+            z-index: 10;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 30px 60px rgba(139, 92, 246, 0.1);
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 2rem;
+            letter-spacing: -0.05em;
+            background: linear-gradient(135deg, #a78bfa 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(13, 15, 20, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        }
+
+        .btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #27272a;
+            color: #52525b;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .status-container {
+            margin-top: 2rem;
+            padding: 1.25rem;
+            border-radius: 16px;
+            background: rgba(13, 15, 20, 0.5);
+            border: 1px solid var(--border-color);
+            display: none;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-value {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--warning);
+            margin-bottom: 0.25rem;
+        }
+
+        .status-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Status Colors */
+        .status-success { color: var(--success); }
+        .status-danger { color: var(--danger); }
+        .status-warning { color: var(--warning); }
+        .status-muted { color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="logo">Ticketing System</div>
+            <div class="subtitle">高併發防禦與排隊交易驗證沙盒</div>
+
+            <div class="form-group">
+                <label for="event_id">活動代碼 (Event ID)</label>
+                <input type="text" id="event_id" class="form-input" value="concert_a">
+            </div>
+
+            <div class="form-group">
+                <label for="member_id">會員識別碼 (Member ID)</label>
+                <input type="number" id="member_id" class="form-input" placeholder="請輸入 Member ID (例如: 123)">
+            </div>
+
+            <div class="form-group">
+                <label for="token">驗證憑證 (Token)</label>
+                <input type="text" id="token" class="form-input" placeholder="請輸入 Token (例如: token_123)">
+            </div>
+
+            <button id="submit_btn" class="btn" onclick="submitReservation()">立刻搶票</button>
+
+            <div id="status_box" class="status-container">
+                <div class="status-title">系統狀態反應</div>
+                <div id="status_value" class="status-value">請填寫表單下單</div>
+                <div id="status_desc" class="status-desc">等待下單中...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pollInterval = null;
+
+        function updateUIState(status, desc, className) {
+            const statusBox = document.getElementById("status_box");
+            const statusVal = document.getElementById("status_value");
+            const statusDesc = document.getElementById("status_desc");
+            const btn = document.getElementById("submit_btn");
+
+            statusBox.style.display = "block";
+            statusVal.innerHTML = status;
+            statusVal.className = "status-value " + className;
+            statusDesc.innerText = desc;
+
+            if (status === "QUEUED" || status === "PENDING") {
+                btn.disabled = true;
+            } else {
+                btn.disabled = false;
+            }
+        }
+
+        async function submitReservation() {
+            const eventId = document.getElementById("event_id").value.trim();
+            const memberId = document.getElementById("member_id").value.trim();
+            const token = document.getElementById("token").value.trim();
+            const btn = document.getElementById("submit_btn");
+
+            if (!eventId || !memberId || !token) {
+                alert("請填寫所有欄位");
+                return;
+            }
+
+            // Clear any old polls
+            if (pollInterval) clearInterval(pollInterval);
+
+            updateUIState("<span class='spinner'></span>QUEUED", "正在安全通道排隊入隊中...", "status-warning");
+
+            try {
+                const response = await fetch(`/api/v1/tickets/${eventId}/reserve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token
+                    },
+                    body: JSON.stringify({
+                        member_id: parseInt(memberId),
+                        token: token
+                    })
+                });
+
+                if (response.status === 202) {
+                    const data = await response.json();
+                    updateUIState("QUEUED", "已成功入隊！開始進行訂單狀態輪詢...", "status-warning");
+                    startPolling(eventId, memberId);
+                } else if (response.status === 401) {
+                    updateUIState("UNAUTHORIZED", "身份憑證驗證失敗，無法購票 (HTTP 401)", "status-danger");
+                } else if (response.status === 403 || response.status === 503) {
+                    updateUIState("RATE_LIMITED", "操作過於頻繁！請求已被網關限流防護 (HTTP " + response.status + ")", "status-danger");
+                } else {
+                    updateUIState("ERROR", "未知系統錯誤 (HTTP " + response.status + ")", "status-danger");
+                }
+            } catch (err) {
+                updateUIState("ERROR", "無法連線至搶票伺服器，請重試", "status-danger");
+            }
+        }
+
+        function startPolling(eventId, memberId) {
+            pollInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/v1/orders/${eventId}/${memberId}`);
+                    
+                    if (response.status === 200) {
+                        const data = await response.json();
+                        const orderStatus = data.status; // PENDING, SUCCESS, FAILED
+                        
+                        if (orderStatus === "SUCCESS") {
+                            clearInterval(pollInterval);
+                            updateUIState("SUCCESS", "恭喜您！訂單已成功落庫成交！", "status-success");
+                        } else if (orderStatus === "FAILED") {
+                            clearInterval(pollInterval);
+                            updateUIState("FAILED", "搶票失敗：庫存已售罄或重複排隊", "status-danger");
+                        } else {
+                            // PENDING
+                            updateUIState("PENDING", "正在扣減快取庫存並持久化落庫中，請稍候...", "status-warning");
+                        }
+                    } else if (response.status === 404) {
+                        // Not found yet (wait in queue)
+                        updateUIState("PENDING", "佇列消費中，訂單建立中...", "status-warning");
+                    } else {
+                        clearInterval(pollInterval);
+                        updateUIState("ERROR", "輪詢出現異常狀態 (HTTP " + response.status + ")", "status-danger");
+                    }
+                } catch (err) {
+                    // Fail silently for single poll network glitch
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

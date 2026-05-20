@@ -1,0 +1,49 @@
+# =============================================
+# Python
+# =============================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# =============================================
+# Environment & Secrets (NEVER commit these)
+# =============================================
+.env
+.env.*
+!.env.example
+
+# =============================================
+# Runtime Logs (generated at test time)
+# =============================================
+log/sandbox_runtime.log
+log/*.log
+
+# =============================================
+# Docker & Build Artifacts
+# =============================================
+*.pyc
+
+# =============================================
+# OS & Editor
+# =============================================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+*.suo
