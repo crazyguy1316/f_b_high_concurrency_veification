@@ -31,3 +31,23 @@
     `ARCHITECT_DISPATCHER` $\rightarrow$ `GENERAL_OOP_IMPLEMENTER` $\rightarrow$ `REVIEWER_REFACTOR` (審查 + 同步 + 隱式宣稱壓測通過) $\rightarrow$ 流程結束（缺乏實體壓測驗證與閉環）。
 *   **新 Waterfall 架構**：
     `ARCHITECT_DISPATCHER` (開工單) $\rightarrow$ `GENERAL_OOP_IMPLEMENTER` (代碼編寫) $\rightarrow$ `REVIEWER_REFACTOR` (靜態審查 & 放行至 src) $\rightarrow$ `INTEGRATION_TESTER` (實體容器搭建、k6 壓測、對帳日誌輸出) $\rightarrow$ `LOG_ANALYZER_RECOVERY` (監聽日誌，若 Failed 則輸出 JSON Healing 引導回退至實作員；若 Success 則正式通過驗證)。
+
+---
+
+## [2026-06-03] 架構決策正式化：最終一致性模型與對帳補償策略（ADR-006）
+
+### 1. 變更緣由
+ADR-003 §2.3 聲明了 Lua 原子性邊界止於 Redis 內部，Redis→MySQL 之間屬於分散式事務問題，但僅以引用方式帶過，未形成完整的決策文件。本次補完正式化此一致性策略，確立以下核心架構決策。
+
+### 2. 受影響 Agent
+- **`INTEGRATION_TESTER`**：明確其強制執行 `reconcile.py` 的責任（對帳失敗即測試失敗）。
+- **`LOG_ANALYZER_RECOVERY`**：明確 `[RECONCILE_FAILURE]` 為觸發日誌分析的系統故障信號。
+- **`GENERAL_OOP_IMPLEMENTER`**：明確 `reconcile.py` 必須實作補償邏輯（從 Redis Hash 重建 MySQL 缺失訂單）。
+- **`REVIEWER_REFACTOR`**：審查清單新增：MySQL INSERT 失敗時嚴禁反向回滾 Redis。
+
+### 3. 受影響 src 子目錄
+- `project_root/src_staging/tests/reconcile.py`（補償邏輯規格更新）
+
+### 4. 前後架構對比
+*   **舊定義（隱含）**：`reconcile.py` 僅做「比對 MySQL 與 Redis 筆數是否相等」，相等則通過，不等則失敗。補償路徑未定義。
+*   **新定義（ADR-006）**：`reconcile.py` 在發現差異後必須執行補償（從 Redis Hash 重建缺失訂單），補償後再次驗證。`MySQL 筆數 > Redis Hash 筆數` 為系統故障信號。明確定義五類已接受的技術債與風險。
