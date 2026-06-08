@@ -3,7 +3,7 @@
 ## [2026-05-19] 引入 INTEGRATION_TESTER 與確立 Waterfall Flow 協作機制
 
 ### 1. 異動概述
-為了優化搶票驗證系統的開發與驗證管道，避免測試範疇發散並縮小除錯範圍（Blast Radius），我們在此次變更中新增了 `INTEGRATION_TESTER` 專任 Agent，並將整體協作模式調整為瀑布式流程（Waterfall Flow）。
+為了優化搶票驗證系統的開發與驗證管道，避免測試範疇發散並縮小除錯範圍（Blast Radius），此次變更中新增了 `INTEGRATION_TESTER` 專任 Agent，並將整體協作模式調整為瀑布式流程（Waterfall Flow）。
 
 ### 2. 決斷原因 (Decision Rationale)
 *   **單一職責與關注點分離**：

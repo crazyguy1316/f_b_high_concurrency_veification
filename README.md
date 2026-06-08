@@ -3,7 +3,7 @@
 ## 專案緣起與協作模式 (Project Genesis & Collaboration Model)
 本專案由**專案執行者（扮演 SD 系統設計師 與 SI 系統整合商 雙重角色）**與多位專業領域的 **AI Agents** 協作完成。
 
-在這個創新的協作過程中，人類主導了架構方向、業務規格定義與資源調度（採用嚴謹的 Waterfall Flow 瀑布式流向管控），而各專屬 AI Agents 則被精確指派到對應的開發與維運階段（包含 `ARCHITECT_DISPATCHER`, `GENERAL_OOP_IMPLEMENTER`, `REVIEWER_REFACTOR`, `INTEGRATION_TESTER`, `LOG_ANALYZER_RECOVERY`）。我們實現了從概念設計、程式實作、架構走查到高壓自動化測試的完美閉環，展示了人機協同在複雜系統開發上的強大潛力。
+在這個協作過程中，由人類主導架構方向、業務規格定義與資源調度（採用嚴謹的 Waterfall Flow 瀑布式流向管控），而各專屬 AI Agents 則被精確指派到對應的開發與維運階段（包含 `ARCHITECT_DISPATCHER`, `GENERAL_OOP_IMPLEMENTER`, `REVIEWER_REFACTOR`, `INTEGRATION_TESTER`, `LOG_ANALYZER_RECOVERY`）。實現從概念設計、程式實作、架構走查到高壓自動化測試的完美閉環，展示人機協同在複雜系統開發上的潛力與風險控管。
 
 ## 業務問題目標 (Business Objectives)
 本專案旨在解決現代電商或售票系統中最嚴苛的業務場景：**極短時間內的瞬間極高併發請求（Flash Sales / Ticketing）**。
@@ -14,7 +14,7 @@
 4. **資料最終一致性 (Eventual Consistency)**：確保快取（Redis）的超高速運算結果，能穩定且不遺漏地持久化回歸至永久儲存層（MySQL），完成最終的對帳一致。
 
 ## 技術門檻與核心架構 (Technical Thresholds & Core Architecture)
-為了達成上述嚴苛的業務目標，本專案跨越了數項具備高技術門檻的核心架構：
+為了達成上述的業務目標，本專案跨越了數項具備高技術門檻的核心架構：
 
 ### 1. 分散式快取與 Lua 腳本原子操作
 *   放棄傳統 MySQL 的 `SELECT ... FOR UPDATE` 行鎖（這在高併發下會導致嚴重的阻塞與效能瓶頸），改用 Redis 儲存即時庫存。

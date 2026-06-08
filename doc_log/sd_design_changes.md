@@ -1,7 +1,7 @@
 ## [2026-05-19] 技術選型評審：確立 Async I/O 連線庫之併發安全邊界
 
 ### 1. 選型定案
-- 後端驅動核心全面採用 `redis.asyncio` 與 `aiomysql`，以異步非阻塞（Non-blocking）模式極大化 FastAPI 之 RPS。
+- 因應本專案考量驗證規模選用 python 實作，後端驅動核心全面採用 `redis.asyncio` 與 `aiomysql`，以異步非阻塞（Non-blocking）模式極大化 FastAPI 之 RPS。
 
 ### 2. 併發防禦約束（Anti-Pattern Guardrail）
 - **禁止狀態交錯**：嚴禁在 Python 代碼層面使用 `await redis.get` 與 `await redis.set` 進行組合式業務狀態變更。
